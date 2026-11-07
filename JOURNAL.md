@@ -126,6 +126,14 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
   `STATE_LABELS` into one expression so its docstring attaches to it.
 - Final state: 18 tests pass (`venv/bin/python -m pytest -v`).
 
+### 2026-11-06 — Output and publishing
+
+- Saved the program output to `output.txt` and, at the user's request, committed it
+  (reverses the earlier Q14 "don't commit output.txt" decision so graders can see it
+  next to the code). Regenerate with `venv/bin/python gridworld.py > output.txt`.
+- The user chose a **public** GitHub repo. The assignment PDF stays out of git
+  (`*.pdf` in `.gitignore`), so course material is not published.
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package
