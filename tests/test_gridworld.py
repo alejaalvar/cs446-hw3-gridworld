@@ -90,3 +90,29 @@ def test_two_sweeps_favour_neighbours_of_terminal():
 def test_three_sweeps_match_hand_calculation():
     v3 = gw.evaluate_policy(gw.uniform_random_policy(), 3)[3]
     assert (v3[CELL[1]], v3[CELL[6]]) == (Fraction(-95, 32), Fraction(-43, 16))
+
+
+# --- Seam 5: renderers ------------------------------------------------------------
+
+def table_rows(text):
+    """Split a rendered ``| a | b |`` table into lists of stripped cell strings."""
+    return [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in text.splitlines()
+        if line.strip().startswith("|")
+    ]
+
+
+def test_value_grid_shows_values_to_three_decimals_in_grid_layout():
+    v2 = gw.evaluate_policy(gw.uniform_random_policy(), 2)[2]
+    assert table_rows(gw.format_value_grid(v2)) == [
+        ["-2.000", "-2.000", "-2.000", "-2.000"],
+        ["-1.875", "-1.875", "-1.875", "-2.000"],
+        ["-1.875", "0.000", "-1.875", "-2.000"],
+        ["-1.875", "-1.875", "-1.875", "-2.000"],
+    ]
+
+
+def test_value_grid_rounds_exact_halves_away_from_zero_like_hand_rounding():
+    values = {cell: Fraction(-41, 16) for cell in CELL.values()}  # -2.5625 exactly
+    assert table_rows(gw.format_value_grid(values))[0][0] == "-2.563"

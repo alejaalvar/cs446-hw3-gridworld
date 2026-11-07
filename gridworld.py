@@ -12,6 +12,7 @@ Run ``python gridworld.py`` to print V_k, the greedy (improved) policy, and the 
 table for k = 1, 2, 3.
 """
 
+from decimal import ROUND_HALF_UP, Decimal
 from fractions import Fraction
 
 State = tuple[int, int]
@@ -154,3 +155,64 @@ def evaluate_policy(policy: Policy, k: int) -> list[ValueFunction]:
             new[state] = sum(p * q[a] for a, p in action_probs.items())
         history.append(new)
     return history
+
+
+def _format_value(value: Fraction) -> str:
+    """Format an exact value to 3 decimal places, rounding halves away from zero.
+
+    Python's float formatting rounds exact ties half-to-even (``-2.5625`` -> ``-2.562``),
+    which disagrees with hand rounding (``-2.563``). Rounding the exact ``Fraction``
+    through ``Decimal`` with ``ROUND_HALF_UP`` matches what is written on paper.
+
+    Args:
+        value: An exact value.
+
+    Returns:
+        The value as a string with exactly three decimals, e.g. ``"-1.875"``.
+    """
+    exact = Decimal(value.numerator) / Decimal(value.denominator)
+    return str(exact.quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
+
+
+def _format_table(rows: list[list[str]]) -> str:
+    """Render rows of cell strings as a bordered, column-aligned text table.
+
+    Shared by every renderer so all printed tables look the same.
+
+    Args:
+        rows: Table rows; every row must have the same number of cells.
+
+    Returns:
+        The table as a multi-line string, e.g. ``| a | b |`` lines between ``+--+`` rules.
+    """
+    widths = [max(len(row[i]) for row in rows) for i in range(len(rows[0]))]
+    rule = "+" + "+".join("-" * (w + 2) for w in widths) + "+"
+    lines = [rule]
+    for row in rows:
+        lines.append("| " + " | ".join(cell.rjust(w) for cell, w in zip(row, widths)) + " |")
+        lines.append(rule)
+    return "\n".join(lines)
+
+
+def _grid_rows(cell_text) -> list[list[str]]:
+    """Lay out one string per cell in the 4x4 GridWorld shape.
+
+    Args:
+        cell_text: Callable mapping a ``State`` to the text shown in that cell.
+
+    Returns:
+        ``ROWS`` lists of ``COLS`` strings, ready for ``_format_table``.
+    """
+    return [[cell_text((r, c)) for c in range(COLS)] for r in range(ROWS)]
+
+
+def format_value_grid(values: ValueFunction) -> str:
+    """Render V_k in the GridWorld layout, each value to 3 decimal places.
+
+    Args:
+        values: Value estimates for every state.
+
+    Returns:
+        A 4x4 text table.
+    """
+    return _format_table(_grid_rows(lambda s: _format_value(values[s])))
