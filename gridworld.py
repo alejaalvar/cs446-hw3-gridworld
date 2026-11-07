@@ -57,6 +57,10 @@ STATES: list[State] = [(r, c) for r in range(ROWS) for c in range(COLS)]
 NON_TERMINAL_STATES: list[State] = [s for s in STATES if s != TERMINAL]
 """The 15 cells in which the agent acts."""
 
+STATE_LABELS: dict[State, str] = {s: str(i) for i, s in enumerate(NON_TERMINAL_STATES, 1)}
+STATE_LABELS[TERMINAL] = "T"
+"""Cell -> the state's number in the assignment figure (row-major, skipping T)."""
+
 ValueFunction = dict[State, Fraction]
 """State-value estimates V(s); the terminal state always maps to 0."""
 
@@ -239,3 +243,27 @@ def format_policy_grid(greedy: dict[State, tuple[str, ...]]) -> str:
     return _format_table(
         _grid_rows(lambda s: "T" if s == TERMINAL else "".join(ARROWS[a] for a in greedy[s]))
     )
+
+
+def format_q_table(values: ValueFunction) -> str:
+    """Render the one-step lookahead q-values behind the improved policy.
+
+    One row per non-terminal state (labelled with its PDF number), one column per action
+    in ``ACTIONS`` order. Greedy entries, i.e. the arrows in ``format_policy_grid``, are
+    marked with ``*``; other entries get a trailing space so decimals stay aligned.
+
+    Args:
+        values: The value estimates V_k used for policy improvement.
+
+    Returns:
+        A text table with a header row and 15 state rows.
+    """
+    greedy = greedy_actions(values)
+    rows = [["s", *ACTIONS]]
+    for state in NON_TERMINAL_STATES:
+        q = q_values(values, state)
+        rows.append([
+            STATE_LABELS[state],
+            *(_format_value(v) + ("*" if a in greedy[state] else " ") for a, v in q.items()),
+        ])
+    return _format_table(rows)

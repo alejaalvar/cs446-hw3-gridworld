@@ -126,3 +126,15 @@ def test_policy_grid_shows_all_tied_arrows_and_marks_terminal():
         ["→", "T", "←", every],
         ["↗", "↑", "↖", every],
     ]
+
+
+def test_q_table_row_stars_only_the_greedy_action():
+    rows = table_rows(gw.format_q_table(V1))
+    row_6 = next(row for row in rows if row[0] == "6")
+    assert row_6 == ["6", "-2.000", "-2.000", "-2.000", "-2.000", "-1.000*", "-2.000", "-2.000", "-2.000"]
+
+
+def test_q_table_lists_states_1_to_15_under_action_headers():
+    rows = table_rows(gw.format_q_table(V1))
+    assert rows[0] == ["s", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    assert [row[0] for row in rows[1:]] == [str(n) for n in range(1, 16)]

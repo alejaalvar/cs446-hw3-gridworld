@@ -93,6 +93,23 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
 - Correction to the interview: at k ≤ 3 values are multiples of 1/64 at most (V₃
   denominators seen so far are 16 and 32), not 1/512.
 
+### 2026-11-06 — Slice 5: renderers
+
+- One private `_format_table` renders every table (value grid, policy grid, q-table),
+  and `_grid_rows` lays cells out in the 4×4 shape — both renderers of grid data share
+  them (DRY).
+- **Bug found and fixed (rounding):** the first `format_value_grid` used
+  `f"{float(v):.3f}"`. Python rounds exact ties *half-to-even*, so −2.5625 printed as
+  `-2.562` where hand rounding gives `-2.563`. Values with denominator 16 hit this at
+  k = 3. Wrote a failing test with V = −41/16, then fixed it with `_format_value`, which
+  rounds the exact `Fraction` through `Decimal(..., ROUND_HALF_UP)` (halves away from
+  zero). The q-table reuses the same helper.
+- `format_policy_grid`: red/green against the hand-derived k = 1 policy (only the eight
+  neighbours of T get a single arrow pointing into T; every other state shows all 8).
+- `format_q_table`: red/green on state 6's row at k = 1 (`*` on S only). Stars come from
+  `greedy_actions`, so the q-table and arrow grid cannot disagree. Non-greedy entries
+  get a trailing space so decimals stay aligned. Header/label test passed immediately.
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package
@@ -100,6 +117,11 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
 - Boundary rule implemented as "cancel the whole move" rather than per-axis clamping
   (see Slice 1). Tests refer to states by PDF number via a hand-written `CELL` table so
   they read like the assignment.
+- Value grid shows the terminal as `0.000` (it is a state with V = 0 and the spec asks
+  for V_k(s) for all states); the policy grid shows it as `T`.
+- Rounding to 3 decimals uses round-half-away-from-zero to match hand calculations.
+- `STATE_LABELS` is derived by numbering non-terminal cells row-major from 1, which
+  reproduces the PDF numbering; tests check it against an independent hand-written table.
 
 ## Unresolved problems
 
