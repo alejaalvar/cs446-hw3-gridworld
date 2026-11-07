@@ -38,3 +38,15 @@ def test_all_eight_actions_from_state_6_reach_its_neighbours():
         "N": CELL[2], "NE": CELL[3], "E": CELL[7], "SE": CELL[10],
         "S": CELL["T"], "SW": CELL[9], "W": CELL[5], "NW": CELL[1],
     }
+
+
+# --- Seam 2: q_values (one-step lookahead) ---------------------------------------
+
+# V_1 under the uniform random policy, written out by hand: -1 everywhere, 0 at T.
+V1 = {cell: Fraction(-1) for label, cell in CELL.items() if label != "T"} | {CELL["T"]: Fraction(0)}
+
+
+def test_q_values_reward_entering_terminal_over_other_moves():
+    assert gw.q_values(V1, CELL[6]) == {
+        "N": -2, "NE": -2, "E": -2, "SE": -2, "S": -1, "SW": -2, "W": -2, "NW": -2,
+    }

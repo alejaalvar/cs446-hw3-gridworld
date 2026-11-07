@@ -12,6 +12,8 @@ Run ``python gridworld.py`` to print V_k, the greedy (improved) policy, and the 
 table for k = 1, 2, 3.
 """
 
+from fractions import Fraction
+
 State = tuple[int, int]
 """A grid cell as ``(row, col)``, with ``(0, 0)`` the top-left corner."""
 
@@ -33,6 +35,15 @@ ACTIONS: dict[str, State] = {
 }
 """Action name -> ``(d_row, d_col)`` offset, in the spec's order N, NE, ..., NW."""
 
+REWARD = Fraction(-1)
+"""Reward received on every transition."""
+
+GAMMA = Fraction(1)
+"""Discount factor (the task is undiscounted)."""
+
+ValueFunction = dict[State, Fraction]
+"""State-value estimates V(s); the terminal state always maps to 0."""
+
 
 def next_state(state: State, action: str) -> State:
     """Return the cell reached by taking ``action`` from ``state``.
@@ -51,3 +62,20 @@ def next_state(state: State, action: str) -> State:
     if 0 <= row < ROWS and 0 <= col < COLS:
         return (row, col)
     return state
+
+
+def q_values(values: ValueFunction, state: State) -> dict[str, Fraction]:
+    """One-step lookahead action values from ``state`` under ``values``.
+
+    Because transitions are deterministic, q(s, a) = REWARD + GAMMA * V(s'), where
+    s' = ``next_state(s, a)``. Shared by policy evaluation, policy improvement, and the
+    printed q-table, so the Bellman backup lives in exactly one place.
+
+    Args:
+        values: Current value estimates V_k for every state (terminal = 0).
+        state: A non-terminal cell.
+
+    Returns:
+        Action name -> q-value, in ``ACTIONS`` order.
+    """
+    return {a: REWARD + GAMMA * values[next_state(state, a)] for a in ACTIONS}
