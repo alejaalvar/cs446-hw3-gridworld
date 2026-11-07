@@ -12,6 +12,7 @@ Run ``python gridworld.py`` to print V_k, the greedy (improved) policy, and the 
 table for k = 1, 2, 3.
 """
 
+from collections.abc import Callable
 from decimal import ROUND_HALF_UP, Decimal
 from fractions import Fraction
 
@@ -57,9 +58,13 @@ STATES: list[State] = [(r, c) for r in range(ROWS) for c in range(COLS)]
 NON_TERMINAL_STATES: list[State] = [s for s in STATES if s != TERMINAL]
 """The 15 cells in which the agent acts."""
 
-STATE_LABELS: dict[State, str] = {s: str(i) for i, s in enumerate(NON_TERMINAL_STATES, 1)}
-STATE_LABELS[TERMINAL] = "T"
+STATE_LABELS: dict[State, str] = {
+    s: str(i) for i, s in enumerate(NON_TERMINAL_STATES, 1)
+} | {TERMINAL: "T"}
 """Cell -> the state's number in the assignment figure (row-major, skipping T)."""
+
+K = 3
+"""Number of evaluation sweeps to report (the assignment asks for exactly k = 1, 2, 3)."""
 
 ValueFunction = dict[State, Fraction]
 """State-value estimates V(s); the terminal state always maps to 0."""
@@ -204,7 +209,7 @@ def _format_table(rows: list[list[str]]) -> str:
     return "\n".join(lines)
 
 
-def _grid_rows(cell_text) -> list[list[str]]:
+def _grid_rows(cell_text: Callable[[State], str]) -> list[list[str]]:
     """Lay out one string per cell in the 4x4 GridWorld shape.
 
     Args:
@@ -267,3 +272,29 @@ def format_q_table(values: ValueFunction) -> str:
             *(_format_value(v) + ("*" if a in greedy[state] else " ") for a, v in q.items()),
         ])
     return _format_table(rows)
+
+
+def main() -> None:
+    """Print V_k, the improved policy, and the q-table for k = 1..K.
+
+    The uniform random policy is evaluated for every sweep; the greedy policy derived
+    from each V_k is reported but not fed back (Sutton & Barto, Fig. 4.1 style).
+    """
+    history = evaluate_policy(uniform_random_policy(), K)
+    print(
+        f"GridWorld: {ROWS}x{COLS}, terminal T at {TERMINAL}, {len(ACTIONS)} actions, "
+        f"reward {REWARD}, gamma = {GAMMA}, pi(a|s) = 1/{len(ACTIONS)}"
+    )
+    for k in range(1, K + 1):
+        values = history[k]
+        print(f"\n{'=' * 30} k = {k} {'=' * 30}")
+        print(f"\nValue function V_{k}(s):")
+        print(format_value_grid(values))
+        print(f"\nImproved (greedy) policy from V_{k}:")
+        print(format_policy_grid(greedy_actions(values)))
+        print(f"\nq_{k}(s, a) = -1 + V_{k}(s'), greedy actions marked *:")
+        print(format_q_table(values))
+
+
+if __name__ == "__main__":
+    main()

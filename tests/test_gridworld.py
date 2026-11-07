@@ -138,3 +138,11 @@ def test_q_table_lists_states_1_to_15_under_action_headers():
     rows = table_rows(gw.format_q_table(V1))
     assert rows[0] == ["s", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
     assert [row[0] for row in rows[1:]] == [str(n) for n in range(1, 16)]
+
+
+# --- Smoke test: main() ------------------------------------------------------------
+
+def test_main_prints_results_for_k_1_2_3(capsys):
+    gw.main()
+    out = capsys.readouterr().out
+    assert all(f"k = {k}" in out for k in (1, 2, 3)) and "k = 4" not in out

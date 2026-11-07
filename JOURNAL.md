@@ -110,6 +110,22 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
   `greedy_actions`, so the q-table and arrow grid cannot disagree. Non-greedy entries
   get a trailing space so decimals stay aligned. Header/label test passed immediately.
 
+### 2026-11-06 — Slice 6: `main()` and final verification
+
+- Red/green smoke test: output contains `k = 1`, `k = 2`, `k = 3` and not `k = 4`.
+- `main()` evaluates once to `K` and reuses the history, printing for each k the V_k
+  grid, the greedy policy grid and the q-table.
+- **Manual check of the real output** against independent hand values: V₁ = −1
+  everywhere (T = 0); V₂ = −1.875 at the eight neighbours of T and −2.000 elsewhere;
+  V₃(1) = −2.969 (−95/32); V₃(5) = −2.672 (−171/64, re-derived by hand while checking);
+  V₃(6) = −2.688 (−43/16, a half-tie that now rounds up correctly). Arrows at the
+  neighbours of T point into T for every k; stars in each q-table match the arrows.
+- Clean-up after green (outside the red→green loop): added the missing `Callable` type
+  hint on `_grid_rows`; the banner line now formats `ROWS`, `COLS`, `TERMINAL`,
+  `REWARD`, `GAMMA` and `len(ACTIONS)` instead of hard-coding them (DRY); folded
+  `STATE_LABELS` into one expression so its docstring attaches to it.
+- Final state: 18 tests pass (`venv/bin/python -m pytest -v`).
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package
@@ -125,10 +141,29 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
 
 ## Unresolved problems
 
-_None yet._
+- **Correctness against Part 1 is not yet confirmed.** The program was verified against
+  hand-derived spot values and the spec, not against the user's full Part 1 tables.
+  The user will do that comparison.
+- Running `python gridworld.py | head` prints a harmless `BrokenPipeError` when `head`
+  closes the pipe early. Normal runs and `> output.txt` are unaffected; not fixed
+  because it is standard CPython behaviour and out of scope.
 
 ## Areas to revisit
 
 - **Q1 interpretation.** If the instructor intends the improved policy to be fed back
   (generalized policy iteration), change the driver in `main()` to evaluate the greedy
   policy from the previous k instead of the uniform random policy. V₂ and V₃ will change.
+- **Display choices.** Value cells round to 3 decimals; most k = 3 values are multiples
+  of 1/64 (e.g. −2.953 = −189/64), so rounding hides the last digits. If a Part 1 value
+  differs only in the 3rd decimal, check your hand rounding first, or temporarily print
+  `Fraction` values (`str(values[s])`) to compare exactly.
+- **Ties in the k = 1 policy.** States that cannot reach T in one step tie on all 8
+  actions, which is why their cells show every arrow. This is correct per the spec, but
+  if your Part 1 shows those cells differently (e.g. blank), that is a presentation
+  difference, not a bug.
+- **Unicode arrows** render in most terminals and editors, but some PDF export fonts
+  lack `↗ ↘ ↙ ↖`. If they show as boxes, swap `ARROWS` for ASCII labels — it is the only
+  place the glyphs are defined.
+- **Test coverage** follows the agreed seams only. `uniform_random_policy` is covered
+  indirectly via `evaluate_policy`; rendering of all three k's is checked by eye, not
+  by full-output snapshot tests (deliberately, to avoid brittle tests).
