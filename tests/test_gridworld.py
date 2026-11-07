@@ -50,3 +50,9 @@ def test_q_values_reward_entering_terminal_over_other_moves():
     assert gw.q_values(V1, CELL[6]) == {
         "N": -2, "NE": -2, "E": -2, "SE": -2, "S": -1, "SW": -2, "W": -2, "NW": -2,
     }
+
+
+# --- Seam 3: greedy_actions (policy improvement) ---------------------------------
+
+def test_neighbour_of_terminal_greedily_moves_into_it():
+    assert gw.greedy_actions(V1)[CELL[6]] == ("S",)

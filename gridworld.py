@@ -79,3 +79,23 @@ def q_values(values: ValueFunction, state: State) -> dict[str, Fraction]:
         Action name -> q-value, in ``ACTIONS`` order.
     """
     return {a: REWARD + GAMMA * values[next_state(state, a)] for a in ACTIONS}
+
+
+def greedy_actions(values: ValueFunction) -> dict[State, tuple[str, ...]]:
+    """Policy improvement: every action that maximizes q(s, a) in each state.
+
+    Ties are kept (the spec asks for all equally good actions); because values are exact
+    ``Fraction``s, a tie is plain equality with no float tolerance.
+
+    Args:
+        values: Value estimates V_k for every state.
+
+    Returns:
+        State -> tuple of greedy action names in ``ACTIONS`` order.
+    """
+    greedy = {}
+    for state in values:
+        q = q_values(values, state)
+        best = max(q.values())
+        greedy[state] = tuple(a for a, v in q.items() if v == best)
+    return greedy
