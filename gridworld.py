@@ -41,6 +41,9 @@ REWARD = Fraction(-1)
 GAMMA = Fraction(1)
 """Discount factor (the task is undiscounted)."""
 
+TERMINAL: State = (2, 1)
+"""The single terminal cell (shaded in the assignment figure)."""
+
 ValueFunction = dict[State, Fraction]
 """State-value estimates V(s); the terminal state always maps to 0."""
 
@@ -91,10 +94,14 @@ def greedy_actions(values: ValueFunction) -> dict[State, tuple[str, ...]]:
         values: Value estimates V_k for every state.
 
     Returns:
-        State -> tuple of greedy action names in ``ACTIONS`` order.
+        State -> tuple of greedy action names in ``ACTIONS`` order. The terminal
+        state maps to an empty tuple because no action is taken there.
     """
     greedy = {}
     for state in values:
+        if state == TERMINAL:
+            greedy[state] = ()
+            continue
         q = q_values(values, state)
         best = max(q.values())
         greedy[state] = tuple(a for a, v in q.items() if v == best)

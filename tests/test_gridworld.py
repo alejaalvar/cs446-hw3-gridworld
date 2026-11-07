@@ -56,3 +56,11 @@ def test_q_values_reward_entering_terminal_over_other_moves():
 
 def test_neighbour_of_terminal_greedily_moves_into_it():
     assert gw.greedy_actions(V1)[CELL[6]] == ("S",)
+
+
+def test_terminal_state_has_no_greedy_actions():
+    assert gw.greedy_actions(V1)[CELL["T"]] == ()
+
+
+def test_all_tied_actions_are_kept_when_no_move_is_better():
+    assert gw.greedy_actions(V1)[CELL[1]] == ("N", "NE", "E", "SE", "S", "SW", "W", "NW")

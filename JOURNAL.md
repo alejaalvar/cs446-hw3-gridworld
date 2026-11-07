@@ -68,6 +68,17 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
 - Added a test of all eight offsets from state 6. It and the edge test passed
   immediately (regression guards, not new behaviour).
 
+### 2026-11-06 — Slices 2–3: `q_values` and `greedy_actions`
+
+- `q_values`: red on state 6 under a hand-written V₁ (expected S = −1, others −2);
+  green with a one-line dict comprehension over `ACTIONS`. This is the single place
+  where the Bellman backup r + γV(s′) is written, so evaluation, improvement and the
+  printed q-table all reuse it (DRY).
+- `greedy_actions`: red/green for "neighbour of T moves into T" (state 6 → S), then
+  red/green for "terminal has no actions" (added `TERMINAL`). The tie test (state 1
+  keeps all 8 actions at k = 1) passed immediately because `max` + exact equality
+  already keeps every tied action.
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package
