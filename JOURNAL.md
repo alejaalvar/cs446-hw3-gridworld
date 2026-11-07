@@ -79,6 +79,20 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
   keeps all 8 actions at k = 1) passed immediately because `max` + exact equality
   already keeps every tied action.
 
+### 2026-11-06 — Slice 4: `evaluate_policy`
+
+- Red/green for "V₀ is zero everywhere" (added `STATES`, `NON_TERMINAL_STATES`,
+  `uniform_random_policy`), then red/green for "one sweep gives −1 everywhere except T"
+  (added the sweep loop).
+- The sweep reuses `q_values`, so V_{k+1}(s) = Σ_a π(a|s)·q_k(s,a) and the Bellman
+  backup is still written only once.
+- The V₁ test also pins the **synchronous** update: an in-place sweep in order 1..15
+  would give V₁(6) = −1 − 3/8 because states 1, 2 and 5 would already be −1.
+- Hand-derived V₂ (neighbours of T = −15/8, others −2) and V₃(1) = −95/32,
+  V₃(6) = −43/16 passed on the first run. Derivations are in the test comments.
+- Correction to the interview: at k ≤ 3 values are multiples of 1/64 at most (V₃
+  denominators seen so far are 16 and 32), not 1/512.
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package

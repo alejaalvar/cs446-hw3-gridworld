@@ -71,3 +71,22 @@ def test_all_tied_actions_are_kept_when_no_move_is_better():
 def test_evaluation_starts_from_zero_values():
     v0 = gw.evaluate_policy(gw.uniform_random_policy(), 0)[0]
     assert v0 == {cell: 0 for cell in CELL.values()}
+
+
+def test_one_sweep_gives_minus_one_everywhere_except_terminal():
+    assert gw.evaluate_policy(gw.uniform_random_policy(), 1)[1] == V1
+
+
+def test_two_sweeps_favour_neighbours_of_terminal():
+    # Hand-derived: each neighbour of T has exactly one action into T (q = -1) and seven
+    # into -1 states (q = -2), so V_2 = -1 + (7 * -1 + 0) / 8 = -15/8; all others -2.
+    near_t = Fraction(-15, 8)
+    expected = {cell: Fraction(-2) for cell in CELL.values()} | {
+        CELL[n]: near_t for n in (5, 6, 7, 9, 10, 12, 13, 14)
+    } | {CELL["T"]: Fraction(0)}
+    assert gw.evaluate_policy(gw.uniform_random_policy(), 2)[2] == expected
+
+
+def test_three_sweeps_match_hand_calculation():
+    v3 = gw.evaluate_policy(gw.uniform_random_policy(), 3)[3]
+    assert (v3[CELL[1]], v3[CELL[6]]) == (Fraction(-95, 32), Fraction(-43, 16))

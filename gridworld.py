@@ -130,6 +130,14 @@ def uniform_random_policy() -> Policy:
 def evaluate_policy(policy: Policy, k: int) -> list[ValueFunction]:
     """Iterative policy evaluation for ``k`` synchronous sweeps, starting from V_0 = 0.
 
+    Each sweep applies the Bellman expectation backup to every non-terminal state:
+
+        V_{k+1}(s) = sum_a pi(a|s) * q_k(s, a),   q_k(s, a) = r + gamma * V_k(s')
+
+    The update is *synchronous*: every new value is computed from the previous sweep's
+    values only, never from values already updated in the current sweep. The terminal
+    state stays at 0.
+
     Args:
         policy: The policy to evaluate (action probabilities per non-terminal state).
         k: Number of sweeps to run.
@@ -137,5 +145,12 @@ def evaluate_policy(policy: Policy, k: int) -> list[ValueFunction]:
     Returns:
         ``[V_0, V_1, ..., V_k]``.
     """
-    v0: ValueFunction = {s: Fraction(0) for s in STATES}
-    return [v0]
+    history: list[ValueFunction] = [{s: Fraction(0) for s in STATES}]
+    for _ in range(k):
+        prev = history[-1]
+        new = dict(prev)  # copy, so reads below only ever see the previous sweep
+        for state, action_probs in policy.items():
+            q = q_values(prev, state)
+            new[state] = sum(p * q[a] for a, p in action_probs.items())
+        history.append(new)
+    return history
