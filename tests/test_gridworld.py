@@ -64,3 +64,10 @@ def test_terminal_state_has_no_greedy_actions():
 
 def test_all_tied_actions_are_kept_when_no_move_is_better():
     assert gw.greedy_actions(V1)[CELL[1]] == ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+
+
+# --- Seam 4: evaluate_policy (synchronous iterative policy evaluation) -----------
+
+def test_evaluation_starts_from_zero_values():
+    v0 = gw.evaluate_policy(gw.uniform_random_policy(), 0)[0]
+    assert v0 == {cell: 0 for cell in CELL.values()}

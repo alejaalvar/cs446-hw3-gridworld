@@ -44,8 +44,17 @@ GAMMA = Fraction(1)
 TERMINAL: State = (2, 1)
 """The single terminal cell (shaded in the assignment figure)."""
 
+STATES: list[State] = [(r, c) for r in range(ROWS) for c in range(COLS)]
+"""Every cell in row-major order (top-left to bottom-right), terminal included."""
+
+NON_TERMINAL_STATES: list[State] = [s for s in STATES if s != TERMINAL]
+"""The 15 cells in which the agent acts."""
+
 ValueFunction = dict[State, Fraction]
 """State-value estimates V(s); the terminal state always maps to 0."""
+
+Policy = dict[State, dict[str, Fraction]]
+"""A stochastic policy: state -> (action name -> probability pi(a|s))."""
 
 
 def next_state(state: State, action: str) -> State:
@@ -106,3 +115,27 @@ def greedy_actions(values: ValueFunction) -> dict[State, tuple[str, ...]]:
         best = max(q.values())
         greedy[state] = tuple(a for a, v in q.items() if v == best)
     return greedy
+
+
+def uniform_random_policy() -> Policy:
+    """The equiprobable policy pi(a|s) = 1/8 for every action in every non-terminal state.
+
+    Returns:
+        A ``Policy`` covering ``NON_TERMINAL_STATES``.
+    """
+    prob = Fraction(1, len(ACTIONS))
+    return {s: {a: prob for a in ACTIONS} for s in NON_TERMINAL_STATES}
+
+
+def evaluate_policy(policy: Policy, k: int) -> list[ValueFunction]:
+    """Iterative policy evaluation for ``k`` synchronous sweeps, starting from V_0 = 0.
+
+    Args:
+        policy: The policy to evaluate (action probabilities per non-terminal state).
+        k: Number of sweeps to run.
+
+    Returns:
+        ``[V_0, V_1, ..., V_k]``.
+    """
+    v0: ValueFunction = {s: Fraction(0) for s in STATES}
+    return [v0]
