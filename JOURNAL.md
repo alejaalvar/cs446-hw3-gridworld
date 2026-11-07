@@ -55,10 +55,26 @@ policy evaluation and policy improvement for exactly k = 1, 2, 3.
 - Added `pytest.ini` with `pythonpath = .` so `tests/` can `import gridworld` without
   packaging the project.
 
+### 2026-11-06 — Slice 1: `next_state` (actions + boundary rule)
+
+- Red: interior move (6 –N→ 2) failed with `ModuleNotFoundError`; green after adding
+  `ACTIONS` and offset arithmetic.
+- Red: corner diagonal (1 –NW→ 1) failed because the move went to `(-1, -1)`; green after
+  adding the in-grid check.
+- **Caught a spec subtlety before it became a bug:** the plan said "clamp-to-grid", but
+  clamping per axis is *wrong* for diagonals along an edge (NE from state 2 would clamp
+  to state 3). The spec says off-grid moves leave the state unchanged, so the whole move
+  is cancelled. Added a test pinning this.
+- Added a test of all eight offsets from state 6. It and the edge test passed
+  immediately (regression guards, not new behaviour).
+
 ## On-the-fly decisions
 
 - `pytest.ini` with `pythonpath = .` instead of a `conftest.py` path hack or a package
   layout — smallest change that lets tests import the top-level script.
+- Boundary rule implemented as "cancel the whole move" rather than per-axis clamping
+  (see Slice 1). Tests refer to states by PDF number via a hand-written `CELL` table so
+  they read like the assignment.
 
 ## Unresolved problems
 

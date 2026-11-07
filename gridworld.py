@@ -15,6 +15,12 @@ table for k = 1, 2, 3.
 State = tuple[int, int]
 """A grid cell as ``(row, col)``, with ``(0, 0)`` the top-left corner."""
 
+ROWS = 4
+"""Number of grid rows."""
+
+COLS = 4
+"""Number of grid columns."""
+
 ACTIONS: dict[str, State] = {
     "N": (-1, 0),
     "NE": (-1, 1),
@@ -36,7 +42,12 @@ def next_state(state: State, action: str) -> State:
         action: One of the keys of ``ACTIONS``.
 
     Returns:
-        The resulting cell.
+        The resulting cell. If the move would leave the grid, the agent does not move
+        and ``state`` is returned unchanged (the whole move is cancelled; coordinates
+        are *not* clamped axis by axis).
     """
     d_row, d_col = ACTIONS[action]
-    return (state[0] + d_row, state[1] + d_col)
+    row, col = state[0] + d_row, state[1] + d_col
+    if 0 <= row < ROWS and 0 <= col < COLS:
+        return (row, col)
+    return state
