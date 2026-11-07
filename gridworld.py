@@ -36,6 +36,12 @@ ACTIONS: dict[str, State] = {
 }
 """Action name -> ``(d_row, d_col)`` offset, in the spec's order N, NE, ..., NW."""
 
+ARROWS: dict[str, str] = {
+    "N": "↑", "NE": "↗", "E": "→", "SE": "↘",
+    "S": "↓", "SW": "↙", "W": "←", "NW": "↖",
+}
+"""Action name -> arrow glyph used when printing a policy."""
+
 REWARD = Fraction(-1)
 """Reward received on every transition."""
 
@@ -216,3 +222,20 @@ def format_value_grid(values: ValueFunction) -> str:
         A 4x4 text table.
     """
     return _format_table(_grid_rows(lambda s: _format_value(values[s])))
+
+
+def format_policy_grid(greedy: dict[State, tuple[str, ...]]) -> str:
+    """Render a greedy policy as arrows in the GridWorld layout.
+
+    Each cell lists every tied greedy action as arrows in ``ACTIONS`` order; the
+    terminal cell shows ``T``.
+
+    Args:
+        greedy: Output of ``greedy_actions``.
+
+    Returns:
+        A 4x4 text table.
+    """
+    return _format_table(
+        _grid_rows(lambda s: "T" if s == TERMINAL else "".join(ARROWS[a] for a in greedy[s]))
+    )

@@ -116,3 +116,13 @@ def test_value_grid_shows_values_to_three_decimals_in_grid_layout():
 def test_value_grid_rounds_exact_halves_away_from_zero_like_hand_rounding():
     values = {cell: Fraction(-41, 16) for cell in CELL.values()}  # -2.5625 exactly
     assert table_rows(gw.format_value_grid(values))[0][0] == "-2.563"
+
+
+def test_policy_grid_shows_all_tied_arrows_and_marks_terminal():
+    every = "↑↗→↘↓↙←↖"
+    assert table_rows(gw.format_policy_grid(gw.greedy_actions(V1))) == [
+        [every, every, every, every],
+        ["↘", "↓", "↙", every],
+        ["→", "T", "←", every],
+        ["↗", "↑", "↖", every],
+    ]
